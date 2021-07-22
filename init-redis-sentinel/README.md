@@ -17,15 +17,15 @@ We are reciving redis.conf file and sentinel.conf file and adding to them:
 
 ## Environment Variables
 
-| Name | Default | Explain |
-|---|---|---|
-| REDIS_PASSWORD | - | The redis password to set |
-| REPLICAS | - | The number of redis replicas |
-| CONFIGURATION_VOLUME | /configurations | The location of the log and the configuration files this image creating |
-| REDIS_CONF | - | The location the redis.conf to add parameters to is found |
-| SENTINEL_CONF | - | The location the sentine.conf to add parameters to is found |
-| SENTINEL_PASSWORD | - | The sentinel password to set |
-| NAME | the name of the container | The name of your redis |
-| REDIS_PORT | 6379 | The port to set to redis |
-| SENTINEL_PORT | 26379 | The port to set to sentinel |
+| Name                 | Default                   | Explain                                                                 |
+|----------------------|---------------------------|-------------------------------------------------------------------------|
+| REDIS_PASSWORD       | -                         | The redis password to set                                               |
+| REPLICAS             | -                         | The number of redis replicas                                            |
+| CONFIGURATION_VOLUME | /configurations           | The location of the log and the configuration files this image creating |
+| REDIS_CONF           | -                         | The location the redis.conf to add parameters to is found               |
+| SENTINEL_CONF        | -                         | The location the sentine.conf to add parameters to is found             |
+| SENTINEL_PASSWORD    | -                         | The sentinel password to set                                            |
+| NAME                 | the name of the container | The name of your redis                                                  |
+| REDIS_PORT           | 6379                      | The port to set to redis                                                |
+| SENTINEL_PORT        | 26379                     | The port to set to sentinel                                             |
 
