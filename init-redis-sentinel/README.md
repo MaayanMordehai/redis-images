@@ -18,6 +18,7 @@ We are reciving redis.conf file and sentinel.conf file and adding to them:
 ## Environment Variables
 
 | Name | Default | Explain |
+|---|---|---|
 | REDIS_PASSWORD | - | The redis password to set |
 | REPLICAS | - | The number of redis replicas |
 | CONFIGURATION_VOLUME | /configurations | The location of the log and the configuration files this image creating |
