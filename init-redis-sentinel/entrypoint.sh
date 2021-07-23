@@ -26,28 +26,28 @@ MYID=""
 
 main() {
 
-  if [ -z "$CONFIGURATION_VOLUME" ];
+  if [ -z "$SHARED_VOLUME" ];
   then
-    export CONFIGURATION_VOLUME=/configurations
-    echo "CONFIGURATION_VOLUME is not defined setting as default value /configuration" 
+    export SHARED_VOLUME=/shared
+    echo "SHARED_VOLUME is not defined setting as default value $SHARED_VOLUME" 
   fi
 
-  if [ ! -d $CONFIGURATION_VOLUME ];
+  if [ ! -d $SHARED_VOLUME ];
   then
-    mkdir -p $CONFIGURATION_VOLUME
+    mkdir -p $SHARED_VOLUME
   else
-    echo '' > $CONFIGURATION_VOLUME/init.log
+    echo '' > $SHARED_VOLUME/init.log
   fi
 
-  echo "logfile is in $CONFIGURATION_VOLUME/init.log"
+  echo "logfile is in $SHARED_VOLUME/init.log"
 
   # Environment variables handling
   handle_env_vars
 
-  export REDIS_PARAMETERS=${CONFIGURATION_VOLUME}/redis.conf
+  export REDIS_PARAMETERS=${SHARED_VOLUME}/redis.conf
 
   # coping the parameters configurations to an editable location, configuration volume
-  cp $REDIS_CONF $REDIS_PARAMETERS 2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  cp $REDIS_CONF $REDIS_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
 
   if [ $? -ne 0 ];
   then
@@ -55,7 +55,7 @@ main() {
     exit 1
   fi
 
-  sed '/^requirepass /d' $REDIS_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^requirepass /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "requirepass $REDIS_PASSWORD" >> $REDIS_PARAMETERS
 
   if [ $REPLICAS -eq 1 ];
@@ -64,13 +64,13 @@ main() {
     exit 0
   fi
 
-  export SENTINEL_PARAMETERS=${CONFIGURATION_VOLUME}/sentinel.conf
+  export SENTINEL_PARAMETERS=${SHARED_VOLUME}/sentinel.conf
 
   export REPLICAS_CONNECTED_TO_PRIM=$(expr $REPLICAS / 2) 
   export QUORUM_SIZE=$(expr $REPLICAS_CONNECTED_TO_PRIM + 1)
 
   # coping the parameters configurations to an editable location - configuration volume
-  cp $SENTINEL_CONF $SENTINEL_PARAMETERS 2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  cp $SENTINEL_CONF $SENTINEL_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
 
   if [ $? -ne 0 ];
   then
@@ -79,13 +79,13 @@ main() {
   fi
 
   # setting vars for the redis.conf
-  sed '/^masterauth /d' $REDIS_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^masterauth /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "masterauth $REDIS_PASSWORD" >> $REDIS_PARAMETERS
-  sed '/^min-replicas-to-write /d' $REDIS_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^min-replicas-to-write /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "min-replicas-to-write $REPLICAS_CONNECTED_TO_PRIH" >> $REDIS_PARAMETERS
-  sed '/^replica-announce-ip /d' $REDIS_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^replica-announce-ip /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "replica-announce-ip $HOSTNAME" >> $REDIS_PARAMETERS
-  sed '/^replica-announce-port /d' $REDIS_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^replica-announce-port /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "replica-announce-port $REDIS_PORT" >> $REDIS_PARAMETERS
 
   # getting the master from sentinels
@@ -96,23 +96,23 @@ main() {
     MASTER=$HOSTNAME
   else
     log "INFO: setting $MASTER as master"
-    sed '/^slaveof /d' $REDIS_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
-    sed '/^replicaof /d' $REDIS_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+    sed '/^slaveof /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+    sed '/^replicaof /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
     echo "replicaof $MASTER $REDIS_PORT" >> $REDIS_PARAMETERS
   fi
 
   # making sentinel use the service name and not ip on the port the user asked
-  sed '/^port /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^port /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "port $SENTINEL_PORT" >> $SENTINEL_PARAMETERS
-  sed '/^requirepass /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^requirepass /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "requirepass $SENTINEL_PASSWORD" >> $SENTINEL_PARAMETERS
-  sed '/^sentinel resolve-hostnames /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^sentinel resolve-hostnames /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "sentinel resolve-hostnames yes" >> $SENTINEL_PARAMETERS
-  sed '/^sentinel announce-hostnames /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^sentinel announce-hostnames /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "sentinel announce-hostnames yes" >> $SENTINEL_PARAMETERS
-  sed '/^sentinel announce-ip /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^sentinel announce-ip /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "sentinel announce-ip $HOSTNAME" >> $SENTINEL_PARAMETERS
-  sed '/^sentinel announce-port /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+  sed '/^sentinel announce-port /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "sentinel announce-port $SENTINEL_PORT" >> $SENTINEL_PARAMETERS
   # defining the master
   echo "sentinel monitor $NAME $MASTER $REDIS_PORT $QUORUM_SIZE" >> $SENTINEL_PARAMETERS
@@ -122,7 +122,7 @@ main() {
 
   if [ ! -z "$MYID" ]
   then
-    sed '/^sentinel myid /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $CONFIGURATION_VOLUME/init.log
+    sed '/^sentinel myid /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
     echo "sentinel myid $MYID" >> $SENTINEL_PARAMETERS
   else
     log "INFO: could not find my sentinel id, so will let new one to be generated"
@@ -267,7 +267,7 @@ handle_env_vars() {
 # Logging
 log() {
   DATE=`date +"%Y-%m-%dT%H:%M:%S"`
-  echo $DATE - $@ | tee -a $CONFIGURATION_VOLUME/init.log
+  echo $DATE - $@ | tee -a $SHARED_VOLUME/init.log
 }
 
 main

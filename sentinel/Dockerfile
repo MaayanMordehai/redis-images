@@ -1,3 +1,4 @@
 FROM maayanmord/custom-redis:6.2
 WORKDIR /var/lib/redis
-CMD ["redis-server", "--sentinel", "/configurations/sentinel.conf"]
+ENV SHARED_VOLUME /shared
+CMD ["redis-server", "--sentinel", "$SHARED_VOLUME/sentinel.conf"]
