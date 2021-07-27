@@ -1,6 +1,6 @@
 FROM redis:6.2
 
-ENV SHARED_VOLUME /shared
+ENV SHARED_VOLUME /config
 
 WORKDIR /
 COPY entrypoint.sh /
