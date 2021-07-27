@@ -23,7 +23,6 @@
 MASTER=""
 MYID=""
 
-
 main() {
 
   if [ -z "$SHARED_VOLUME" ];
@@ -55,7 +54,7 @@ main() {
     exit 1
   fi
 
-  sed '/^requirepass /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+  sed -i '/^requirepass /d' $REDIS_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "requirepass $REDIS_PASSWORD" >> $REDIS_PARAMETERS
 
   if [ $REPLICAS -eq 1 ];
@@ -74,18 +73,18 @@ main() {
 
   if [ $? -ne 0 ];
   then
-    log "ERROR: could not get confignap sentinel.conf file"
+    log "ERROR: could not get configmap sentinel.conf file"
     exit 1
   fi
 
   # setting vars for the redis.conf
-  sed '/^masterauth /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+  sed -i '/^masterauth /d' $REDIS_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "masterauth $REDIS_PASSWORD" >> $REDIS_PARAMETERS
-  sed '/^min-replicas-to-write /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
-  echo "min-replicas-to-write $REPLICAS_CONNECTED_TO_PRIH" >> $REDIS_PARAMETERS
-  sed '/^replica-announce-ip /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+  sed -i '/^min-replicas-to-write /d' $REDIS_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
+  echo "min-replicas-to-write $REPLICAS_CONNECTED_TO_PRIM" >> $REDIS_PARAMETERS
+  sed -i '/^replica-announce-ip /d' $REDIS_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "replica-announce-ip $HOSTNAME" >> $REDIS_PARAMETERS
-  sed '/^replica-announce-port /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+  sed -i '/^replica-announce-port /d' $REDIS_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "replica-announce-port $REDIS_PORT" >> $REDIS_PARAMETERS
 
   # getting the master from sentinels
@@ -96,23 +95,23 @@ main() {
     MASTER=$HOSTNAME
   else
     log "INFO: setting $MASTER as master"
-    sed '/^slaveof /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
-    sed '/^replicaof /d' $REDIS_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+    sed -i '/^slaveof /d' $REDIS_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
+    sed -i '/^replicaof /d' $REDIS_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
     echo "replicaof $MASTER $REDIS_PORT" >> $REDIS_PARAMETERS
   fi
 
   # making sentinel use the service name and not ip on the port the user asked
-  sed '/^port /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+  sed -i '/^port /d' $SENTINEL_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "port $SENTINEL_PORT" >> $SENTINEL_PARAMETERS
-  sed '/^requirepass /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+  sed -i '/^requirepass /d' $SENTINEL_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "requirepass $SENTINEL_PASSWORD" >> $SENTINEL_PARAMETERS
-  sed '/^sentinel resolve-hostnames /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+  sed -i '/^sentinel resolve-hostnames /d' $SENTINEL_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "sentinel resolve-hostnames yes" >> $SENTINEL_PARAMETERS
-  sed '/^sentinel announce-hostnames /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+  sed -i '/^sentinel announce-hostnames /d' $SENTINEL_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "sentinel announce-hostnames yes" >> $SENTINEL_PARAMETERS
-  sed '/^sentinel announce-ip /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+  sed -i '/^sentinel announce-ip /d' $SENTINEL_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "sentinel announce-ip $HOSTNAME" >> $SENTINEL_PARAMETERS
-  sed '/^sentinel announce-port /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+  sed -i '/^sentinel announce-port /d' $SENTINEL_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
   echo "sentinel announce-port $SENTINEL_PORT" >> $SENTINEL_PARAMETERS
   # defining the master
   echo "sentinel monitor $NAME $MASTER $REDIS_PORT $QUORUM_SIZE" >> $SENTINEL_PARAMETERS
@@ -122,7 +121,7 @@ main() {
 
   if [ ! -z "$MYID" ]
   then
-    sed '/^sentinel myid /d' $SENTINEL_PARAMETERS  2>&1 | tee -a $SHARED_VOLUME/init.log
+    sed -i '/^sentinel myid /d' $SENTINEL_PARAMETERS 2>&1 | tee -a $SHARED_VOLUME/init.log
     echo "sentinel myid $MYID" >> $SENTINEL_PARAMETERS
   else
     log "INFO: could not find my sentinel id, so will let new one to be generated"
@@ -142,7 +141,6 @@ get_master() {
   # Checking sentinel nodes for master
   MASTER=""
   hosts=$(get_hosts $(expr $1 - 1))
-
   for host in $hosts
   do
     # current host sentinel is not up so no need to check it ..
@@ -217,9 +215,10 @@ get_hosts() {
   else
     n=$(expr $1 - 1)
     prev_hosts=$(get_hosts $n)
-    echo $prev_hosts" $NANE-$1"
+    echo $prev_hosts $NAME-$1
   fi
 }
+
 
 # If var is not defined setting as default
 # $l env var
