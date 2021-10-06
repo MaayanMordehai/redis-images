@@ -160,7 +160,7 @@ get_master() {
       continue
     fi
 
-    MASTER=$(echo $master_output | cut -d',' -f1 | cut -d'"' -f2)
+    MASTER=$(echo $master_output | awk '{ print $1 }')
 
     if [ "$MASTER" = "NIL" ] || [ ! ${MASTER##*-} -lt $REPLICAS ];
     then
