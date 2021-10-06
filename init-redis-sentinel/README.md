@@ -24,7 +24,7 @@ If we can't connect to the others we are setting current node as master.
 |-------------------|---------------------------|--------------------------------------------------------------------------------------------------------------------------|
 | REDIS_PASSWORD    | -                         | The redis password to set                                                						   |
 | REPLICAS          | -                         | The number of redis replicas                                             						   |
-| SHARED_VOLUME     | /shared                   | Shared location that will be mounted to the sentinel and redis instances, includes logs, scripts and configuration files |
+| SHARED_VOLUME     | /config                   | Shared location that will be mounted to the sentinel and redis instances, includes logs, scripts and configuration files |
 | REDIS_CONF        | -                         | The location the redis.conf to add parameters to is found                                                                |
 | SENTINEL_CONF     | -                         | The location the sentine.conf to add parameters to is found                                                              |
 | SENTINEL_PASSWORD | -                         | The sentinel password to set                                                                                             |
